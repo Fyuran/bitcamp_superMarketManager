@@ -1,5 +1,7 @@
 package manager.market;
 
+import java.util.Locale;
+
 public enum Category {
 	FRUITS,
 	VEGETABLES,
@@ -12,8 +14,11 @@ public enum Category {
 	HEALTHCARE,
 	DAIRY;
 	
-	public String getLocalized(String locale) {
-		if(locale.equals("it-IT")) {
+	@Override
+	public String toString() {
+		//https://www.oracle.com/java/technologies/javase/jdk21-suported-locales.html
+		Locale currentLocale = Locale.getDefault();
+		if(currentLocale.toLanguageTag().equals("it-IT")) { //Italian(Italy)
 			switch(this) {
 				case FRUITS:
 					return "Frutta";
@@ -39,6 +44,6 @@ public enum Category {
 					return "Sconosciuto";
 			}
 		}
-		return "";
+		return this.name();
 	}
 }
