@@ -42,9 +42,9 @@ public class Market {
 		
 		MenuUI productsMenu = new MenuUI("Menu Prodotti");
 		productsMenu.addCmd("Aggiungi Prodotto", ()->{market.addProduct(false);});
-		/*productsMenu.addCmd("Modifica Prodotto", ()->{market.editProduct(true);});
+		productsMenu.addCmd("Modifica Prodotto", ()->{market.editProduct();});
 		productsMenu.addCmd("Rimuovi Prodotto", ()->{market.delProduct();});
-		productsMenu.addCmd("Cerca Prodotto", ()->{market.findProduct();});*/
+		productsMenu.addCmd("Cerca Prodotto", ()->{market.findProduct();});
 		productsMenu.addCmd("Visualizza Prodotti", ()->{market.viewProducts();});
 		
 		MenuUI offersMenu = new MenuUI("Menu Offerte");
@@ -149,35 +149,130 @@ public class Market {
 		return product;
 	}
 	
-	public void delProduct(Product product) {
-		if(!products.contains(product)) {
-			System.out.println("Prodotto non trovato");
-			return;
-		}		
-		products.remove(product);
-		System.out.println("Prodotto rimosso con successo");
-	}
-	public void viewProducts() {
-		if(products.size() == 0) {
-			System.out.println(ANSI_RED + "*Nessun prodotto trovato*" + ANSI_RESET);
-			return;
-		}
-			
-		for(int i = 0; i < products.size(); i++) {
-			System.out.println(i + ". "  + products.get(i));		
-			
-		}
-	}
-	public void editProduct(Product newProduct, Product productToSubstitute) {					
-		if(!products.contains(productToSubstitute)) {
-			System.out.println("Prodotto non trovato");
-			return;
-		}		
-		products.set(0, newProduct);
-		System.out.println("Prodotto modificato con successo");
-	}
-	public void findProduct() {
+	public void delProduct() {
+		MenuUI choiceMenu = new MenuUI("Cerca il prodotto");
 		
+		choiceMenu.addCmd("Trova per nome prodotto", () -> {
+			System.out.println("Inserisci il nome del prodotto da cancellare");
+			String name = scanner.nextLine();
+			try {
+				products.remove(products.get(findProductByName(name)));
+				
+				System.out.println(ANSI_GREEN + "Prodotto cancellato" + ANSI_RESET);
+			} catch (IndexOutOfBoundsException e) {
+				System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
+			}
+		});
+		choiceMenu.addCmd("Trova per ID prodotto", () -> {
+			System.out.println("Inserisci l'ID del prodotto dell'offerta da cancellare");
+			int index = -1;
+			if(scanner.hasNextInt()) {
+				index = scanner.nextInt();
+				scanner.nextLine();
+				
+				try {
+					products.remove(index);
+					System.out.println("Prodotto cancellato");
+				} catch (IndexOutOfBoundsException e) {
+					System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
+				}
+			} else {
+	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	scanner.nextLine();
+			}
+		});
+		choiceMenu.showCmds();
+	}
+	
+	public void viewProducts() {
+		if(products.size() < 1) {
+			System.out.println(ANSI_RED + "Nessun prodotto da visualizzare" + ANSI_RESET);
+			return;
+		}
+		
+		for(int i = 0; i < products.size(); i++) {
+			 System.out.println(i + ". "  + products.get(i));
+		}
+	}
+	
+	public void editProduct() {					
+		MenuUI choiceMenu = new MenuUI("Cerca il prodotto");
+		choiceMenu.addCmd("Trova per nome prodotto", () -> {
+			System.out.println("Inserisci il nome del prodotto che vuoi modificare");
+			String name = scanner.nextLine();
+			int indexOfProduct = findProductByName(name);
+			
+			if(indexOfProduct != -1) {				
+				Product product = addProduct(true);
+				products.set(indexOfProduct, product);	
+				System.out.println(ANSI_GREEN + "Prodotto modificato correttamente" + ANSI_RESET);
+			}
+			
+			else {
+				System.out.println(ANSI_RED + "Prodotto non trovato" + ANSI_RESET);
+			}			
+		});
+		choiceMenu.addCmd("Trova per ID prodotto", () -> {
+			System.out.println("Inserisci l'ID del prodotto da modificare");
+			int index = -1;
+			if(scanner.hasNextInt()) {
+				index = scanner.nextInt();
+				scanner.nextLine();
+				
+				if(index != -1) {					
+					Product product = addProduct(true);
+					products.set(index, product);	
+					System.out.println(ANSI_GREEN + "Prodotto modificato correttamente" + ANSI_RESET);
+				}
+				
+				else {
+					System.out.println(ANSI_RED + "Prodotto non trovato" + ANSI_RESET);
+				}
+				
+			} else {
+	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	scanner.nextLine();
+			}
+		});
+		choiceMenu.showCmds();
+	}
+	
+	public void findProduct() {
+		MenuUI choiceMenu = new MenuUI("Cerca il prodotto");
+		choiceMenu.addCmd("Trova per nome prodotto", () -> {
+			System.out.println("Inserisci il nome del prodotto che vuoi cercare");
+			String name = scanner.nextLine();
+			int indexOfProduct = findProductByName(name);
+			
+			if(indexOfProduct != -1) {
+				System.out.println(ANSI_GREEN + products.get(indexOfProduct) + ANSI_RESET);
+			}
+			
+			else {
+				System.out.println(ANSI_RED + "Prodotto non trovato" + ANSI_RESET);
+			}			
+		});
+		choiceMenu.addCmd("Trova per ID prodotto", () -> {
+			System.out.println("Inserisci l'ID del prodotto da visualizzare");
+			int index = -1;
+			if(scanner.hasNextInt()) {
+				index = scanner.nextInt();
+				scanner.nextLine();
+				
+				if(index != -1) {
+					System.out.println(products.get(index));
+				}
+				
+				else {
+					System.out.println(ANSI_RED + "Prodotto non trovato" + ANSI_RESET);
+				}
+				
+			} else {
+	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	scanner.nextLine(); //advance buffer
+			}
+		});
+		choiceMenu.showCmds();
 	}
 	
 	//-------------------------------------------------------------------------------
