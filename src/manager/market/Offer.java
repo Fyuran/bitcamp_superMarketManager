@@ -43,6 +43,16 @@ public class Offer {
 		this.dateEnd = dateEnd;
 	}
 	
+	@Override
+	public String toString() {
+		String discountFmt = new String(String.format("%d%%", discount));
+		
+		return "Offerta{Prodotto = " + product + 
+					", Sconto = " + discountFmt +
+						", Data inizio = " + dateStart + 
+							", Data termine = "+ dateEnd + "}";
+	}
+	
 	
 	
 }
