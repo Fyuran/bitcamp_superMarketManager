@@ -73,7 +73,7 @@ public class Market {
 	
 	public int findProductByName(String name) { //search indexOf element by product's String name
 		for(int i = 0; i < products.size(); i++)
-			if(products.get(i).getName().equals(name)) return i;
+			if(products.get(i).getName().equalsIgnoreCase(name)) return i;
 		
 		return -1;
 	}
@@ -290,11 +290,15 @@ public class Market {
 			if(scanner.hasNextDouble()) {
 				discount = scanner.nextDouble();
 				scanner.nextLine(); //advance buffer
-				if(discount >= 1 && discount <= 99)
-					break;
+				if(discount >= 1 && discount <= 99) {
+					break;					
+				} else {
+					System.out.println(ANSI_RED + "*Inserisci uno sconto valido*" + ANSI_RESET);
+				}
+			} else {
+	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	scanner.nextLine(); //advance buffer
 			}
-			System.out.println(ANSI_RED + "*Inserisci uno sconto valido*" + ANSI_RESET);
-			scanner.nextLine();
 		}
 		
 		//dateEnd input
@@ -379,7 +383,7 @@ public class Market {
 			System.out.println("Inserisci il nome del prodotto dell'offerta da cancellare");
 			String name = scanner.nextLine();
 			try {
-				offers.remove(findOfferByName(name)); //subtract from id
+				offers.remove(findOfferByName(name));
 				System.out.println("Offerta cancellata");
 			} catch (IndexOutOfBoundsException e) {
 				System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
