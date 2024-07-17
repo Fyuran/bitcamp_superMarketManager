@@ -41,13 +41,15 @@ public class Market {
 		System.out.println(market.name);
 		
 		MenuUI productsMenu = new MenuUI("Menu Prodotti");
-		productsMenu.addCmd("Aggiungi Prodotto", ()->{market.addProduct();});
-		/*productsMenu.addCmd("Rimuovi Prodotto", ()->{market.delProduct();});
-		productsMenu.addCmd("Visualizza Prodotti", ()->{market.viewProducts();});
+		productsMenu.addCmd("Aggiungi Prodotto", ()->{market.addProduct(false);});
+		/*productsMenu.addCmd("Modifica Prodotto", ()->{market.editProduct(true);});
+		productsMenu.addCmd("Rimuovi Prodotto", ()->{market.delProduct();});
 		productsMenu.addCmd("Cerca Prodotto", ()->{market.findProduct();});*/
+		productsMenu.addCmd("Visualizza Prodotti", ()->{market.viewProducts();});
 		
 		MenuUI offersMenu = new MenuUI("Menu Offerte");
-		offersMenu.addCmd("Aggiungi Offerta", ()->{market.addOffer();});
+		offersMenu.addCmd("Aggiungi Offerta", ()->{market.addOffer(false);});
+		offersMenu.addCmd("Modifica Offerta", ()->{market.editOffer();});
 		offersMenu.addCmd("Rimuovi Offerta", ()->{market.delOffer();});
 		offersMenu.addCmd("Visualizza Offerte", ()->{market.viewOffers();});
 		offersMenu.addCmd("Cerca Offerta", ()->{market.findOffer();});
@@ -92,15 +94,17 @@ public class Market {
 	
 	//-------------------------------------------------------------------------------
 	//Product(String name, Category category, double price)
-	public Product addProduct() { 
+	public Product addProduct(boolean isEdit) { 
 		System.out.println("\nInserisci il nome del prodotto: ");
 		String name = scanner.nextLine();
 		
-		//check if product already exists
-		int indexOfProduct = findProductByName(name);
-		if(indexOfProduct != -1) {
-			System.out.println(ANSI_CYAN + "Prodotto con lo stesso nome trovato" + ANSI_RESET);
-			return products.get(indexOfProduct);
+		if(!isEdit) { //do not return if we need to edit object
+			//check if product already exists
+			int indexOfProduct = findProductByName(name);
+			if(indexOfProduct != -1) {
+				System.out.println(ANSI_CYAN + "Prodotto con lo stesso nome trovato" + ANSI_RESET);
+				return products.get(indexOfProduct);
+			}			
 		}
 		
 			
@@ -115,7 +119,7 @@ public class Market {
 				indexOfCategory = scanner.nextInt();
 				scanner.nextLine(); //advance buffer
 				
-				if(indexOfCategory >= 1 &&  indexOfCategory < Category.size())
+				if(indexOfCategory >= 1 &&  indexOfCategory <= Category.size())
 					break;
 			}
 			System.out.println(ANSI_RED + "*Inserisci una categoria valida*" + ANSI_RESET);
@@ -137,9 +141,11 @@ public class Market {
 		}
 		
 		Product product = new Product(name, getEnumConstant(Category.class, indexOfCategory-1), price);	
-		products.add(product);
-		System.out.println(ANSI_GREEN + "Prodotto aggiunto: " + product + ANSI_RESET);
 		
+		if(!isEdit) { //do not edit if we need to edit object
+			products.add(product);
+			System.out.println(ANSI_GREEN + "Prodotto aggiunto: " + product + ANSI_RESET);
+		}
 		return product;
 	}
 	
@@ -152,14 +158,22 @@ public class Market {
 		System.out.println("Prodotto rimosso con successo");
 	}
 	public void viewProducts() {
-		
+		if(products.size() == 0) {
+			System.out.println(ANSI_RED + "*Nessun prodotto trovato*" + ANSI_RESET);
+			return;
+		}
+			
+		for(int i = 0; i < products.size(); i++) {
+			System.out.println(i + ". "  + products.get(i));		
+			
+		}
 	}
 	public void editProduct(Product newProduct, Product productToSubstitute) {					
 		if(!products.contains(productToSubstitute)) {
 			System.out.println("Prodotto non trovato");
 			return;
 		}		
-		products.set(Product.getId(), newProduct);
+		products.set(0, newProduct);
 		System.out.println("Prodotto modificato con successo");
 	}
 	public void findProduct() {
@@ -168,8 +182,10 @@ public class Market {
 	
 	//-------------------------------------------------------------------------------
 	//Offer(Product product, double discount, LocalDate dateStart, LocalDate dateEnd)
-	public Offer addOffer() {
-		Product product = addProduct();
+	public Offer addOffer(boolean isEdit) {
+		Product product = addProduct(isEdit);
+		if(products.contains(product)) //remove from products arrayList to deny clones
+			products.remove(product);
 		
 		//Discount input
 		double discount = 0;
@@ -213,28 +229,70 @@ public class Market {
 		}
 		
 		Offer offer = new Offer(product, discount, dateStart, dateEnd);
-		offers.add(offer);
-		System.out.println(ANSI_GREEN + "Offerta aggiunta: " + offer + ANSI_RESET);
+		if(!isEdit) { //do not edit if we need to edit object
+			offers.add(offer);
+			System.out.println(ANSI_GREEN + "Offerta aggiunta: " + offer + ANSI_RESET);
+		}
 		
 		return offer;
 		
 	}
 
+	public void editOffer() {
+		MenuUI choiceMenu = new MenuUI("Scelta Opzione");
 
+		choiceMenu.addCmd("Modifica per nome", () -> {
+			System.out.println("Inserisci il nome del prodotto dell'offerta da modificare");
+			String name = scanner.nextLine();
+			try {
+				int indexOfOffer = findOfferByName(name);
+				offers.get(indexOfOffer); //throw if not found
+				Offer newOffer = addOffer(true);
+				offers.set(indexOfOffer, newOffer);
+				System.out.println(ANSI_GREEN + "Offerta modificata" + ANSI_RESET);
+				
+			} catch (IndexOutOfBoundsException e) {
+				System.out.println(ANSI_RED + "*Offerta non esistente*" + ANSI_RESET);
+			}
+		});
+		
+		choiceMenu.addCmd("Modifica per indice", () -> {
+			System.out.println("Inserisci l'indice del prodotto dell'offerta da modificare");
+			int index = -1;
+			if(scanner.hasNextInt()) {
+				index = scanner.nextInt();
+				scanner.nextLine(); //advance buffer
+				try {
+					Offer offer = offers.get(index);
+					System.out.println(offer);
+				} catch (IndexOutOfBoundsException e) {
+					System.out.println(ANSI_RED + "*Offerta non esistente*" + ANSI_RESET);
+				}
+			} else {
+	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	scanner.nextLine(); //advance buffer
+			}
+		});
+		
+		choiceMenu.showCmds();
+	}
+	
 	public void delOffer() {
 		MenuUI choiceMenu = new MenuUI("Scelta Opzione");
-		choiceMenu.addCmd("Trova per nome prodotto", () -> {
+		
+		choiceMenu.addCmd("Cancella per nome", () -> {
 			System.out.println("Inserisci il nome del prodotto dell'offerta da cancellare");
 			String name = scanner.nextLine();
 			try {
-				offers.remove(findOfferByName(name));
+				offers.remove(findOfferByName(name)); //subtract from id
 				System.out.println("Offerta cancellata");
 			} catch (IndexOutOfBoundsException e) {
 				System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
 			}
 		});
-		choiceMenu.addCmd("Trova per ID prodotto", () -> {
-			System.out.println("Inserisci l'ID del prodotto dell'offerta da cancellare");
+		
+		choiceMenu.addCmd("Cancella per indice", () -> {
+			System.out.println("Inserisci l'indice del prodotto dell'offerta da cancellare");
 			int index = -1;
 			if(scanner.hasNextInt()) {
 				index = scanner.nextInt();
@@ -254,6 +312,7 @@ public class Market {
 		choiceMenu.showCmds();
 
 	}
+	
 	public void viewOffers() {
 		if(offers.size() == 0) {
 			System.out.println(ANSI_RED + "*Nessuna offerta trovata*" + ANSI_RESET);
@@ -261,10 +320,43 @@ public class Market {
 		}
 			
 		for(int i = 0; i < offers.size(); i++)
-			System.out.println("" + (i+1) + offers.get(i));		
+			System.out.println(i + ". " + offers.get(i));		
 	}
+	
 	public void findOffer() {
+		MenuUI choiceMenu = new MenuUI("Scelta Opzione");
 
+		choiceMenu.addCmd("Trova per nome", () -> {
+			System.out.println("Inserisci il nome del prodotto dell'offerta da trovare");
+			String name = scanner.nextLine();
+			try {
+				Offer offer = offers.get(findOfferByName(name));
+				System.out.println(offer);
+			} catch (IndexOutOfBoundsException e) {
+				System.out.println(ANSI_RED + "*Offerta non esistente*" + ANSI_RESET);
+			}
+		});
+		
+		choiceMenu.addCmd("Trova per indice", () -> {
+			System.out.println("Inserisci l'indice del prodotto dell'offerta da trovare");
+			int index = -1;
+			if(scanner.hasNextInt()) {
+				index = scanner.nextInt();
+				scanner.nextLine(); //advance buffer
+				try {
+					Offer offer = offers.get(index);
+					System.out.println(offer);
+				} catch (IndexOutOfBoundsException e) {
+					System.out.println(ANSI_RED + "*Offerta non esistente*" + ANSI_RESET);
+				}
+			} else {
+	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	scanner.nextLine(); //advance buffer
+			}
+		});
+		
+		choiceMenu.showCmds();
 	}
+	
 	
 }
