@@ -14,6 +14,32 @@ public enum Category {
 	HEALTHCARE,
 	DAIRY;
 	
+	private static final Category[] categories = Category.values();
+	private static final int length = Category.values().length;
+	
+	public static int size() {
+		return length;
+	}
+	
+	public static void getCategoriesList() {
+		int items = 0; //var used to display x values by row
+		String fmt = "";
+		
+		for(int i = 0; i < categories.length; i++) {
+			Category cat = categories[i];
+			fmt += (i+1) + "-" + cat + " ";
+			
+			if(items < 3) {
+				items++;
+			} else {
+				fmt += "\n"; //new line
+				items = 0; //reset back to zero
+			}
+		}
+		System.out.println(fmt);
+	}
+		
+	
 	@Override
 	public String toString() {
 		//https://www.oracle.com/java/technologies/javase/jdk21-suported-locales.html
