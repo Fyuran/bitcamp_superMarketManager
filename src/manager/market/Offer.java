@@ -45,7 +45,7 @@ public class Offer {
 	
 	@Override
 	public String toString() {
-		return "Offerta{Prodotto = " + product + 
+		return "{Prodotto = " + product + 
 					", Sconto = " + discount + "%" +
 						", Data inizio = " + dateStart + 
 							", Data termine = "+ dateEnd + "}";
