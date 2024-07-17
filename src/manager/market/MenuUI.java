@@ -36,10 +36,9 @@ public class MenuUI {
 				System.out.println("Could not find " + name);
 	}
 	
-	public void showCmds() {
+	public void showCmds() throws NoCommandsAvailableException {
 		if(commands.size() == 0) {
-			System.out.println(ANSI_RED + "*Nessun comando esistente*" + ANSI_RESET);
-			return;
+			throw new NoCommandsAvailableException();
 		}
 		while(true) {
 	        System.out.println(ANSI_CYAN + "-=-=-=-=" + name + "=-=-=-=-" + ANSI_RESET);
