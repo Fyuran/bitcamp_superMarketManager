@@ -42,9 +42,9 @@ public class Market {
 		
 		MenuUI productsMenu = new MenuUI("Menu Prodotti");
 		productsMenu.addCmd("Aggiungi Prodotto", ()->{market.addProduct();});
-		//productsMenu.addCmd("Rimuovi Prodotto", ()->{market.delProduct();});
+		/*productsMenu.addCmd("Rimuovi Prodotto", ()->{market.delProduct();});
 		productsMenu.addCmd("Visualizza Prodotti", ()->{market.viewProducts();});
-		productsMenu.addCmd("Cerca Prodotto", ()->{market.findProduct();});
+		productsMenu.addCmd("Cerca Prodotto", ()->{market.findProduct();});*/
 		
 		MenuUI offersMenu = new MenuUI("Menu Offerte");
 		offersMenu.addCmd("Aggiungi Offerta", ()->{market.addOffer();});
@@ -69,11 +69,14 @@ public class Market {
 	}
 	
 	
-	public int findByName(String name) { //search indexOf element by product's String name
+	public int findProductByName(String name) { //search indexOf element by product's String name
 		for(int i = 0; i < products.size(); i++)
 			if(products.get(i).getName().equals(name)) return i;
 		
-		for(int i = 0; i < products.size(); i++)
+		return -1;
+	}
+	public int findOfferByName(String name) { //search indexOf element by offer's product String name	
+		for(int i = 0; i < offers.size(); i++)
 			if(offers.get(i).getProduct().getName().equals(name)) return i;
 		
 		return -1;
@@ -91,11 +94,11 @@ public class Market {
 	//Product(String name, Category category, double price)
 	public Product addProduct() { 
 		System.out.println("\nInserisci il nome del prodotto: ");
-		String name = scanner.next();
+		String name = scanner.nextLine();
 		
 		//check if product already exists
-		int indexOfProduct = findByName(name);
-		if(indexOfProduct > -1) {
+		int indexOfProduct = findProductByName(name);
+		if(indexOfProduct != -1) {
 			System.out.println(ANSI_CYAN + "Prodotto con lo stesso nome trovato" + ANSI_RESET);
 			return products.get(indexOfProduct);
 		}
@@ -110,12 +113,13 @@ public class Market {
 			
 			if(scanner.hasNextInt()) {
 				indexOfCategory = scanner.nextInt();
+				scanner.nextLine(); //advance buffer
 				
 				if(indexOfCategory >= 1 &&  indexOfCategory < Category.size())
 					break;
 			}
 			System.out.println(ANSI_RED + "*Inserisci una categoria valida*" + ANSI_RESET);
-			scanner.next();
+			scanner.nextLine();
 		}
 		
 		//Price input
@@ -125,10 +129,11 @@ public class Market {
 			
 			if(scanner.hasNextDouble()) {
 				price = scanner.nextDouble();
+				scanner.nextLine();
 				break;
 			}
 			System.out.println(ANSI_RED + "*Inserisci un prezzo valido*" + ANSI_RESET);
-			scanner.next();
+			scanner.nextLine();
 		}
 		
 		Product product = new Product(name, getEnumConstant(Category.class, indexOfCategory-1), price);	
@@ -173,16 +178,16 @@ public class Market {
 			
 			if(scanner.hasNextDouble()) {
 				discount = scanner.nextDouble();
+				scanner.nextLine(); //advance buffer
 				if(discount >= 1 && discount <= 99)
 					break;
 			}
 			System.out.println(ANSI_RED + "*Inserisci uno sconto valido*" + ANSI_RESET);
-			scanner.next();
+			scanner.nextLine();
 		}
 		
 		//dateEnd input
-		LocalDate dateNow = LocalDate.now();
-		LocalDate dateStart = LocalDate.EPOCH;
+		LocalDate dateStart = LocalDate.now();
 		LocalDate dateEnd = LocalDate.EPOCH;
 		
 		boolean isValidInput = false;
@@ -191,14 +196,14 @@ public class Market {
 			try {			
 				System.out.println("Inserisci la data di inizio nel formato " + datePattern);
 				String date = scanner.nextLine();	
-				dateStart = LocalDate.parse(scanner.next(), dateFmt);	
-				if(dateStart.isBefore(dateNow)) //check if startDate is before than now()
+				dateStart = LocalDate.parse(date, dateFmt);	
+				if(dateStart.isBefore(LocalDate.now())) //check if startDate is before than now()
 					throw new DateTimeParseException("La data di inizio è antecedente alla corrente", date, 5);
 				
 				System.out.println("Inserisci la data di termine nel formato " + datePattern);
 				date = scanner.nextLine();
 				dateEnd = LocalDate.parse(date, dateFmt);	
-				if(dateEnd.isBefore(dateNow)) //check if endDate is before than now()
+				if(dateEnd.isBefore(dateStart)) //check if endDate is before than dateStart
 					throw new DateTimeParseException("La data di termine è antecedente alla corrente", date, 5);
 				
 				isValidInput = true;
@@ -217,10 +222,46 @@ public class Market {
 
 
 	public void delOffer() {
+		MenuUI choiceMenu = new MenuUI("Scelta Opzione");
+		choiceMenu.addCmd("Trova per nome prodotto", () -> {
+			System.out.println("Inserisci il nome del prodotto dell'offerta da cancellare");
+			String name = scanner.nextLine();
+			try {
+				offers.remove(findOfferByName(name));
+				System.out.println("Offerta cancellata");
+			} catch (IndexOutOfBoundsException e) {
+				System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
+			}
+		});
+		choiceMenu.addCmd("Trova per ID prodotto", () -> {
+			System.out.println("Inserisci l'ID del prodotto dell'offerta da cancellare");
+			int index = -1;
+			if(scanner.hasNextInt()) {
+				index = scanner.nextInt();
+				scanner.nextLine(); //advance buffer
+				try {
+					offers.remove(index);
+					System.out.println("Offerta cancellata");
+				} catch (IndexOutOfBoundsException e) {
+					System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
+				}
+			} else {
+	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	scanner.nextLine(); //advance buffer
+			}
+		});
 		
+		choiceMenu.showCmds();
+
 	}
 	public void viewOffers() {
-		
+		if(offers.size() == 0) {
+			System.out.println(ANSI_RED + "*Nessuna offerta trovata*" + ANSI_RESET);
+			return;
+		}
+			
+		for(int i = 0; i < offers.size(); i++)
+			System.out.println("" + (i+1) + offers.get(i));		
 	}
 	public void findOffer() {
 

@@ -37,6 +37,10 @@ public class MenuUI {
 	}
 	
 	public void showCmds() {
+		if(commands.size() == 0) {
+			System.out.println(ANSI_RED + "*Nessun comando esistente*" + ANSI_RESET);
+			return;
+		}
 		while(true) {
 	        System.out.println(ANSI_CYAN + "-=-=-=-=" + name + "=-=-=-=-" + ANSI_RESET);
 	        for(int i = 0; i < commands.size(); i++) {
@@ -55,7 +59,7 @@ public class MenuUI {
 	        	try {
 	        		Command cmd = commands.get(choice-1);
 	        		System.out.println(ANSI_CYAN + "Selezionato: " + cmd.name() + ANSI_RESET);
-	        		cmd.fnc().call();
+	        		cmd.execute();
 	        	} catch (IndexOutOfBoundsException e) {
 	        		System.out.println(ANSI_RED + "*Scelta non valida*" + ANSI_RESET);
 	        	}

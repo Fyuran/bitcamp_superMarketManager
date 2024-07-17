@@ -45,10 +45,8 @@ public class Offer {
 	
 	@Override
 	public String toString() {
-		String discountFmt = new String(String.format("%d%%", discount));
-		
 		return "Offerta{Prodotto = " + product + 
-					", Sconto = " + discountFmt +
+					", Sconto = " + discount + "%" +
 						", Data inizio = " + dateStart + 
 							", Data termine = "+ dateEnd + "}";
 	}
