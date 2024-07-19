@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"bitcamp_superMarketManager","l":"manager.market"}];updateSearchResults();

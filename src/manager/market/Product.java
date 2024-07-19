@@ -1,17 +1,24 @@
 package manager.market;
 
+/**
+* A class holding some shop's product data
+*
+*
+* @author Mauro Gariazzo
+* @see Category
+* @see java.lang.String
+* @since 1.0
+*/
 public class Product {
 	private String name;
 	private Category category;
 	private double price;
 
-	
 	public Product(String name, Category category, double price) {
 		this.name = name;
 		this.category = category;
 		this.price = price;
 	}
-	
 
 	public String getName() {
 		return name;
@@ -39,7 +46,7 @@ public class Product {
 
 	@Override
 	public String toString() {
-		return String.format("{Nome: %s, Categoria: %s, Prezzo: %.2f€}", name,category,price);		
+		return String.format("{Nome: %s, Categoria: %s, Prezzo: %.2f€}", name,category,price);
 	}
 
 }

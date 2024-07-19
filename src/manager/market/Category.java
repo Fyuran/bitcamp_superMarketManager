@@ -2,6 +2,13 @@ package manager.market;
 
 import java.util.Locale;
 
+/**
+* Used as a field in Product
+*
+* @author Daniel Camuffo
+* @see Product
+* @since 1.0
+*/
 public enum Category {
 	FRUITS,
 	VEGETABLES,
@@ -13,22 +20,28 @@ public enum Category {
 	HOUSEHOLDSUPPLIES,
 	HEALTHCARE,
 	DAIRY;
-	
+
 	private static final Category[] categories = Category.values();
 	private static final int length = Category.values().length;
-	
+
 	public static int size() {
 		return length;
 	}
-	
+
+	/**
+	* Prints on console every constant present in this enum in a 3 items per row basis
+	*
+	* @author Daniel Camuffo
+	* @since 1.0
+	*/
 	public static void getCategoriesList() {
 		int items = 0; //var used to display x values by row
 		String fmt = "";
-		
+
 		for(int i = 0; i < categories.length; i++) {
 			Category cat = categories[i];
 			fmt += (i+1) + "-" + cat + " ";
-			
+
 			if(items < 3) {
 				items++;
 			} else {
@@ -38,8 +51,8 @@ public enum Category {
 		}
 		System.out.println(fmt);
 	}
-		
-	
+
+
 	@Override
 	public String toString() {
 		//https://www.oracle.com/java/technologies/javase/jdk21-suported-locales.html
