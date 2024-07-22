@@ -304,6 +304,9 @@ public class Market {
 	* @since 1.0
 	*/
 	public Product addProduct(boolean isEdit) {
+		if(isEdit) {
+			System.out.println(ANSI_GREEN + "Modalità modifica del prodotto attiva" + ANSI_RESET);
+		}
 		System.out.println("\nInserisci il nome del prodotto: ");
 		String name = scanner.nextLine();
 		
@@ -518,7 +521,9 @@ public class Market {
 		if(products.contains(product)) { //remove from products arrayList to deny clones
 			products.remove(product);
 		}
-
+		if(isEdit) {
+			System.out.println(ANSI_GREEN + "Modalità modifica dell'offerta attiva" + ANSI_RESET);
+		}
 		//Discount input
 		double discount = 0;
 		while(true) {
