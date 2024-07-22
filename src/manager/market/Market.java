@@ -210,7 +210,7 @@ public class Market {
 		if(list.size() == 0) return null;
 		
 		try {
-			T firstItem = list.getFirst();
+			T firstItem = list.get(0);
 			
 			if(firstItem instanceof Product)
 				return "del prodotto";
