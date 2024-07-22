@@ -272,6 +272,7 @@ public class Market {
 					break;
 			} else {
 				System.out.println(invalidInputNumberMsg);
+				scanner.nextLine();
 			}
 		}
 		return null;
