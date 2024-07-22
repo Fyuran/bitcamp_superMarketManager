@@ -10,7 +10,7 @@ import java.time.LocalDate;
 * @see java.lang.String
 * @since 1.0
 */
-public class Offer {
+public class Offer extends Item {
 
 	private Product product;
 	private double discount;
@@ -27,6 +27,16 @@ public class Offer {
 
 	public Product getProduct() {
 		return product;
+	}
+	public String getDiscountedPrice() {
+		double price = product.getPrice();
+		if(price <= 0) return "0";
+		if(discount == 0) return String.format("%.2f", price);
+		
+		double discountedPrice = price - ((price * discount) / 100);
+		if(discountedPrice < 0.01) //don't show 0 as currency
+			discountedPrice = 0.01;
+		return String.format("%.2f", discountedPrice);
 	}
 	public void setProduct(Product product) {
 		this.product = product;
@@ -54,6 +64,7 @@ public class Offer {
 	public String toString() {
 		return "{Prodotto = " + product +
 					", Sconto = " + discount + "%" +
+					", Prezzo Scontato = " + getDiscountedPrice() + "€" + 
 						", Data inizio = " + dateStart +
 							", Data termine = "+ dateEnd + "}";
 	}

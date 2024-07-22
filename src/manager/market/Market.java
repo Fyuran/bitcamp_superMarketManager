@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 /**
@@ -21,7 +22,7 @@ import java.util.Scanner;
 * @see Product
 * @see Offer
 * @since 1.0
-* @version 1.1
+* @version 1.2
 */
 public class Market {
 
@@ -52,6 +53,26 @@ public class Market {
 		ANSI_CYAN = "\u001B[36m";
 	}
 
+	//errorMsgs
+	private static final String noItemsInListMsg = ANSI_RED + "*Lista vuota*" + ANSI_RESET;
+	private static final String invalidCategoryMsg = ANSI_RED + "*Inserisci una categoria valida*" + ANSI_RESET;
+	
+	private static final String productNotFoundMsg = ANSI_RED + "*Prodotto non trovato*" + ANSI_RESET;
+	
+	private static final String offerNotFoundMsg = ANSI_RED + "*Offerta non trovata*" + ANSI_RESET;
+	
+	private static final String invalidInputNumberMsg = ANSI_RED + "*Numero non valido*" + ANSI_RESET;
+	private static final String invalidCurrencyFormatMsg = ANSI_RED + "*Inserire un prezzo valido*" + ANSI_RESET;
+	
+	//confirmMsgs
+	private static final String productAddedMsg =  ANSI_GREEN + "Prodotto aggiunto" + ANSI_RESET;
+	private static final String productDeletedMsg = ANSI_GREEN + "Prodotto cancellato" + ANSI_RESET;
+	private static final String productModifiedMsg = ANSI_GREEN + "Prodotto modificato" + ANSI_RESET;
+	
+	private static final String offerAddedMsg =  ANSI_GREEN + "Offerta aggiunta" + ANSI_RESET;
+	private static final String offerDeletedMsg = ANSI_GREEN + "Offerta cancellata" + ANSI_RESET;
+	private static final String offerModifiedMsg = ANSI_GREEN + "Offerta modificata" + ANSI_RESET;
+	
 	public static void main(String[] args) {
 		Market market;
 		if(args.length > 0) {
@@ -63,22 +84,22 @@ public class Market {
 		System.out.println(market.name);
 
 		MenuUI productsMenu = new MenuUI("Menu Prodotti");
-		productsMenu.addCmd("Aggiungi Prodotto", ()->{market.addProduct(false);});
-		productsMenu.addCmd("Modifica Prodotto", ()->{market.editProduct();});
-		productsMenu.addCmd("Rimuovi Prodotto", ()->{market.delProduct();});
-		productsMenu.addCmd("Cerca Prodotto", ()->{market.findProduct();});
-		productsMenu.addCmd("Visualizza Prodotti", ()->{market.viewProducts();});
+		productsMenu.addCmd("Aggiungi Prodotto", () -> market.addProduct(false));
+		productsMenu.addCmd("Modifica Prodotto", () -> market.editProduct());
+		productsMenu.addCmd("Rimuovi Prodotto", () -> market.delProduct());
+		productsMenu.addCmd("Cerca Prodotto", () -> market.findProduct());
+		productsMenu.addCmd("Visualizza Prodotti", () -> Market.viewItems(market.products));
 
 		MenuUI offersMenu = new MenuUI("Menu Offerte");
-		offersMenu.addCmd("Aggiungi Offerta", ()->{market.addOffer(false);});
-		offersMenu.addCmd("Modifica Offerta", ()->{market.editOffer();});
-		offersMenu.addCmd("Rimuovi Offerta", ()->{market.delOffer();});
-		offersMenu.addCmd("Visualizza Offerte", ()->{market.viewOffers();});
-		offersMenu.addCmd("Cerca Offerta", ()->{market.findOffer();});
+		offersMenu.addCmd("Aggiungi Offerta", () -> market.addOffer(false));
+		offersMenu.addCmd("Modifica Offerta", () -> market.editOffer());
+		offersMenu.addCmd("Rimuovi Offerta", () -> market.delOffer());
+		offersMenu.addCmd("Visualizza Offerte", () -> Market.viewItems(market.offers));
+		offersMenu.addCmd("Cerca Offerta", () -> market.findOffer());
 
 		MenuUI mainMenu = new MenuUI("Menu principale");
-		mainMenu.addCmd("Menu Prodotti", () -> {productsMenu.showCmds();});
-		mainMenu.addCmd("Menu Offerte", () -> {offersMenu.showCmds();});
+		mainMenu.addCmd("Menu Prodotti", () -> productsMenu.showCmds());
+		mainMenu.addCmd("Menu Offerte", () -> offersMenu.showCmds());
 
 		mainMenu.showCmds();
 
@@ -93,40 +114,171 @@ public class Market {
 	}
 
 	/**
-	* Iterates through products to find product's index
-	* @param name Name of product
-	* @return Index of Product item within products
-	* @since 1.0
-	*/
-	public int findProductByName(String name) { //search indexOf element by product's String name
-		for(int i = 0; i < products.size(); i++) {
-			if(products.get(i).getName().equalsIgnoreCase(name)) {
-				return i;
-			}
+	 * View items in list's items
+	 * @param <T> Product or Offer
+	 * @param <L> List of offers or products
+	 * @param list
+	 * @since 1.2
+	 */
+	public static <T extends Item, L extends List<T>> void viewItems(L list) {
+		if(list.size() == 0) {
+			System.out.println(noItemsInListMsg);
+			return;
 		}
 
-		return -1;
+		for(int i = 0; i < list.size(); i++) {
+			System.out.println(i + ". " + list.get(i));
+		}
 	}
+	
 	/**
-	* Iterates through offers to find offer's index
-	* @param name Name of Offer
-	* @return Index of Offer item within offers
-	* @since 1.0
-	*/
-	public int findOfferByName(String name) { //search indexOf element by offer's product String name
-		for(int i = 0; i < offers.size(); i++) {
-			if(offers.get(i).getProduct().getName().equals(name)) {
-				return i;
+	 * @param <T> Product or Offer
+	 * @param <L> List of offers or products
+	 * @param name String to find
+	 * @param list
+	 * @return indexOf item
+	 * @since 1.2
+	 */
+	public static <T extends Item, L extends List<T>> int getItemIndexByName(String name, L list) {
+		if(list.size() == 0) return -1;
+		
+		for(int i = 0; i < list.size(); i++) {
+			Item item = list.get(i);
+			if(item instanceof Product) {
+				Product product = (Product) item;
+				if(product.getName().equalsIgnoreCase(name))					
+					return i;
+			}
+			if(item instanceof Offer) {
+				Offer offer = (Offer) item;
+				if(offer.getProduct().getName().equalsIgnoreCase(name))
+					return i;
 			}
 		}
-
+		
 		return -1;
 	}
 
+	/**
+	 * @param <T> Product or Offer
+	 * @param <L> List of offers or products
+	 * @param name String to find
+	 * @param list
+	 * @return If item is inside list
+	 * @since 1.2
+	 */
+	public static <T extends Item, L extends List<T>> boolean itemExists(String name, L list) {
+		if(list.size() == 0) return false;
+		
+		for(Item item : list) {
+			if(item instanceof Product) {
+				Product product = (Product) item;
+				if(product.getName().equalsIgnoreCase(name))					
+					return true;
+			}
+			if(item instanceof Offer) {
+				Offer offer = (Offer) item;
+				if(offer.getProduct().getName().equalsIgnoreCase(name))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param <T> Product or Offer
+	 * @param <L> List of offers or products
+	 * @param index index of item
+	 * @param list
+	 * @return If item is inside list
+	 * @since 1.2
+	 */
+	public static <T extends Item, L extends List<T>> boolean itemExists(int index, L list) {
+		if(list.size() == 0) return false;
+		
+		try {
+			list.get(index);
+		} catch(IndexOutOfBoundsException e) {
+			return false;
+		}
+		return true;
+	}
+	
+	private static <T extends Item, L extends List<T>> String getItemDisplayName(L list) {
+		if(list.size() == 0) return null;
+		
+		try {
+			T firstItem = list.getFirst();
+			
+			if(firstItem instanceof Product)
+				return "del prodotto";
+			
+			if(firstItem instanceof Offer)
+				return "dell'offerta";
+			
+		} catch(NoSuchElementException e) {
+			return null;
+		}
+		return null;
+	}
+
+	/**
+	 * @param <T> Product or Offer
+	 * @param <L> List of offers or products
+	 * @param list
+	 * @return Object T
+	 * @since 1.2
+	 */
+	public static <T extends Item, L extends List<T>> T getItemByName(L list) {
+		if(list.size() == 0) {
+			System.out.println(noItemsInListMsg);
+			return null;
+		};
+		
+		System.out.println("Inserisci il nome " + getItemDisplayName(list));
+		String name = scanner.nextLine();
+		try {
+			T obj = list.get(getItemIndexByName(name, list));
+			return obj;
+		} catch(IndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * @param <T> Product or Offer
+	 * @param <L> List of offers or products
+	 * @param list
+	 * @return Object T
+	 * @since 1.2
+	 */
+	public static <T extends Item, L extends List<T>> T getItemByIndex(L list) {
+		if(list.size() == 0) {
+			System.out.println(noItemsInListMsg);
+			return null;
+		};
+		
+		System.out.println("Inserisci l'indice del " + getItemDisplayName(list));
+		while(true) {
+			if(scanner.hasNextInt()) {
+				int index = scanner.nextInt();
+				scanner.nextLine();
+				
+				if(itemExists(index, list))
+					return list.get(index);
+				else
+					break;
+			} else {
+				System.out.println(invalidInputNumberMsg);
+			}
+		}
+		return null;
+	}
 	/**
 	* Iterates through Enum constants to find desired constant index
 	* @param enumeration Class name of enumeration to search through
 	* @param index Which constant to return from enumeration
+	* @param <E> Any enum
 	* @return Enum's constant
 	* @since 1.0
 	*/
@@ -142,7 +294,7 @@ public class Market {
 	}
 
 	//-------------------------------------------------------------------------------
-	//Product(String name, Category category, double price)
+
 	/**
 	* Adds or if isEdit is true, edits an existing item
 	* @param isEdit If it's a case of editing an existing item or not
@@ -155,7 +307,7 @@ public class Market {
 
 		if(!isEdit) { //do not return if we need to edit item
 			//check if product already exists
-			int indexOfProduct = findProductByName(name);
+			int indexOfProduct = getItemIndexByName(name, products);
 			if(indexOfProduct != -1) {
 				System.out.println(ANSI_CYAN + "Prodotto con lo stesso nome trovato" + ANSI_RESET);
 				return products.get(indexOfProduct);
@@ -178,7 +330,7 @@ public class Market {
 					break;
 				}
 			}
-			System.out.println(ANSI_RED + "*Inserisci una categoria valida*" + ANSI_RESET);
+			System.out.println(invalidCategoryMsg);
 			scanner.nextLine();
 		}
 
@@ -192,7 +344,7 @@ public class Market {
 				scanner.nextLine();
 				break;
 			}
-			System.out.println(ANSI_RED + "*Inserisci un prezzo valido*" + ANSI_RESET);
+			System.out.println(invalidCurrencyFormatMsg);
 			scanner.nextLine();
 		}
 
@@ -211,19 +363,19 @@ public class Market {
 	public void delProduct() {
 		MenuUI choiceMenu = new MenuUI("Cerca il prodotto");
 
-		choiceMenu.addCmd("Trova per nome prodotto", () -> {
+		choiceMenu.addCmd("Cancella per nome", () -> {
 			System.out.println("Inserisci il nome del prodotto da cancellare");
 			String name = scanner.nextLine();
 			try {
-				products.remove(products.get(findProductByName(name)));
+				products.remove(products.get(getItemIndexByName(name, products)));
 
-				System.out.println(ANSI_GREEN + "Prodotto cancellato" + ANSI_RESET);
+				System.out.println(productDeletedMsg);
 			} catch (IndexOutOfBoundsException e) {
-				System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
+				System.out.println(offerNotFoundMsg);
 			}
 		});
-		choiceMenu.addCmd("Trova per ID prodotto", () -> {
-			System.out.println("Inserisci l'ID del prodotto dell'offerta da cancellare");
+		choiceMenu.addCmd("Cancella per indice", () -> {
+			System.out.println("Inserisci l'indice del prodotto dell'offerta da cancellare");
 			int index = -1;
 			if(scanner.hasNextInt()) {
 				index = scanner.nextInt();
@@ -231,12 +383,12 @@ public class Market {
 
 				try {
 					products.remove(index);
-					System.out.println("Prodotto cancellato");
+					System.out.println(productDeletedMsg);
 				} catch (IndexOutOfBoundsException e) {
-					System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
+					System.out.println(offerNotFoundMsg);
 				}
 			} else {
-	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	System.out.println(invalidInputNumberMsg);
 	        	scanner.nextLine();
 			}
 		});
@@ -262,40 +414,41 @@ public class Market {
 	*/
 	public void editProduct() {
 		MenuUI choiceMenu = new MenuUI("Cerca il prodotto");
-		choiceMenu.addCmd("Trova per nome prodotto", () -> {
+		choiceMenu.addCmd("Modifica per nome", () -> {
 			System.out.println("Inserisci il nome del prodotto che vuoi modificare");
 			String name = scanner.nextLine();
-			int indexOfProduct = findProductByName(name);
+			int indexOfProduct = getItemIndexByName(name, products);
 
 			if(indexOfProduct != -1) {
 				Product product = addProduct(true);
 				products.set(indexOfProduct, product);
-				System.out.println(ANSI_GREEN + "Prodotto modificato correttamente" + ANSI_RESET);
+				System.out.println(productModifiedMsg);
 			}
 
 			else {
-				System.out.println(ANSI_RED + "Prodotto non trovato" + ANSI_RESET);
+				System.out.println(productNotFoundMsg);
 			}
 		});
-		choiceMenu.addCmd("Trova per ID prodotto", () -> {
-			System.out.println("Inserisci l'ID del prodotto da modificare");
+		choiceMenu.addCmd("Modifica per indice", () -> {
+			System.out.println("Inserisci l'indice del prodotto da modificare");
 			int index = -1;
 			if(scanner.hasNextInt()) {
 				index = scanner.nextInt();
 				scanner.nextLine();
 
 				if(index != -1) {
+					products.get(index);
 					Product product = addProduct(true);
 					products.set(index, product);
-					System.out.println(ANSI_GREEN + "Prodotto modificato correttamente" + ANSI_RESET);
+					System.out.println(productModifiedMsg);
 				}
 
 				else {
-					System.out.println(ANSI_RED + "Prodotto non trovato" + ANSI_RESET);
+					System.out.println(productNotFoundMsg);
 				}
 
 			} else {
-	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	System.out.println(invalidInputNumberMsg);
 	        	scanner.nextLine();
 			}
 		});
@@ -310,14 +463,14 @@ public class Market {
 		choiceMenu.addCmd("Trova per nome prodotto", () -> {
 			System.out.println("Inserisci il nome del prodotto che vuoi cercare");
 			String name = scanner.nextLine();
-			int indexOfProduct = findProductByName(name);
+			int indexOfProduct = getItemIndexByName(name, products);
 
 			if(indexOfProduct != -1) {
 				System.out.println(ANSI_GREEN + products.get(indexOfProduct) + ANSI_RESET);
 			}
 
 			else {
-				System.out.println(ANSI_RED + "Prodotto non trovato" + ANSI_RESET);
+				System.out.println(productNotFoundMsg);
 			}
 		});
 		choiceMenu.addCmd("Trova per ID prodotto", () -> {
@@ -332,11 +485,11 @@ public class Market {
 				}
 
 				else {
-					System.out.println(ANSI_RED + "Prodotto non trovato" + ANSI_RESET);
+					System.out.println(productNotFoundMsg);
 				}
 
 			} else {
-	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	System.out.println(invalidInputNumberMsg);
 	        	scanner.nextLine(); //advance buffer
 			}
 		});
@@ -365,13 +518,13 @@ public class Market {
 			if(scanner.hasNextDouble()) {
 				discount = scanner.nextDouble();
 				scanner.nextLine(); //advance buffer
-				if(discount >= 1 && discount <= 99) {
+				if(discount >= 1 && discount < 100) {
 					break;
 				} else {
 					System.out.println(ANSI_RED + "*Inserisci uno sconto valido*" + ANSI_RESET);
 				}
 			} else {
-	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
+	        	System.out.println(invalidInputNumberMsg);
 	        	scanner.nextLine(); //advance buffer
 			}
 		}
@@ -421,36 +574,26 @@ public class Market {
 		MenuUI choiceMenu = new MenuUI("Scelta Opzione");
 
 		choiceMenu.addCmd("Modifica per nome", () -> {
-			System.out.println("Inserisci il nome del prodotto dell'offerta da modificare");
-			String name = scanner.nextLine();
-			try {
-				int indexOfOffer = findOfferByName(name);
-				offers.get(indexOfOffer); //throw if not found
+			Offer offer = getItemByName(offers);
+			if(offer != null) {
 				Offer newOffer = addOffer(true);
-				offers.set(indexOfOffer, newOffer);
-				System.out.println(ANSI_GREEN + "Offerta modificata" + ANSI_RESET);
-
-			} catch (IndexOutOfBoundsException e) {
-				System.out.println(ANSI_RED + "*Offerta non esistente*" + ANSI_RESET);
+				offers.set(offers.indexOf(offer), newOffer);
+				System.out.println(offerModifiedMsg);
+			} else {
+				System.out.println(offerNotFoundMsg);
 			}
 		});
 
 		choiceMenu.addCmd("Modifica per indice", () -> {
-			System.out.println("Inserisci l'indice del prodotto dell'offerta da modificare");
-			int index = -1;
-			if(scanner.hasNextInt()) {
-				index = scanner.nextInt();
-				scanner.nextLine(); //advance buffer
-				try {
-					Offer offer = offers.get(index);
-					System.out.println(offer);
-				} catch (IndexOutOfBoundsException e) {
-					System.out.println(ANSI_RED + "*Offerta non esistente*" + ANSI_RESET);
-				}
+			Offer offer = getItemByIndex(offers);
+			if(offer != null) {
+				Offer newOffer = addOffer(true);
+				offers.set(offers.indexOf(offer), newOffer);
+				System.out.println(offerModifiedMsg);
 			} else {
-	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
-	        	scanner.nextLine(); //advance buffer
+				System.out.println(offerNotFoundMsg);
 			}
+				
 		});
 
 		choiceMenu.showCmds();
@@ -463,50 +606,27 @@ public class Market {
 		MenuUI choiceMenu = new MenuUI("Scelta Opzione");
 
 		choiceMenu.addCmd("Cancella per nome", () -> {
-			System.out.println("Inserisci il nome del prodotto dell'offerta da cancellare");
-			String name = scanner.nextLine();
-			try {
-				offers.remove(findOfferByName(name));
-				System.out.println("Offerta cancellata");
-			} catch (IndexOutOfBoundsException e) {
-				System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
+			Offer offer = getItemByName(offers);
+			if(offer != null) {
+				offers.remove(offer);
+				System.out.println(offerDeletedMsg);
+			} else {
+				System.out.println(offerNotFoundMsg);
 			}
 		});
 
 		choiceMenu.addCmd("Cancella per indice", () -> {
-			System.out.println("Inserisci l'indice del prodotto dell'offerta da cancellare");
-			int index = -1;
-			if(scanner.hasNextInt()) {
-				index = scanner.nextInt();
-				scanner.nextLine(); //advance buffer
-				try {
-					offers.remove(index);
-					System.out.println("Offerta cancellata");
-				} catch (IndexOutOfBoundsException e) {
-					System.out.println(ANSI_RED + "*Prodotto non esistente*" + ANSI_RESET);
-				}
+			Offer offer = getItemByIndex(offers);
+			if(offer != null) {
+				offers.remove(offer);
+				System.out.println(offerDeletedMsg);
 			} else {
-	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
-	        	scanner.nextLine(); //advance buffer
+				System.out.println(offerNotFoundMsg);
 			}
 		});
 
 		choiceMenu.showCmds();
 
-	}
-	/**
-	* Views items
-	* @since 1.0
-	*/
-	public void viewOffers() {
-		if(offers.size() == 0) {
-			System.out.println(ANSI_RED + "*Nessuna offerta trovata*" + ANSI_RESET);
-			return;
-		}
-
-		for(int i = 0; i < offers.size(); i++) {
-			System.out.println(i + ". " + offers.get(i));
-		}
 	}
 	/**
 	* Finds an item
@@ -516,36 +636,14 @@ public class Market {
 		MenuUI choiceMenu = new MenuUI("Scelta Opzione");
 
 		choiceMenu.addCmd("Trova per nome", () -> {
-			System.out.println("Inserisci il nome del prodotto dell'offerta da trovare");
-			String name = scanner.nextLine();
-			try {
-				Offer offer = offers.get(findOfferByName(name));
-				System.out.println(offer);
-			} catch (IndexOutOfBoundsException e) {
-				System.out.println(ANSI_RED + "*Offerta non esistente*" + ANSI_RESET);
-			}
+			Offer offer = getItemByName(offers);
+			System.out.println(offer != null ? offer : offerNotFoundMsg);
 		});
-
 		choiceMenu.addCmd("Trova per indice", () -> {
-			System.out.println("Inserisci l'indice del prodotto dell'offerta da trovare");
-			int index = -1;
-			if(scanner.hasNextInt()) {
-				index = scanner.nextInt();
-				scanner.nextLine(); //advance buffer
-				try {
-					Offer offer = offers.get(index);
-					System.out.println(offer);
-				} catch (IndexOutOfBoundsException e) {
-					System.out.println(ANSI_RED + "*Offerta non esistente*" + ANSI_RESET);
-				}
-			} else {
-	        	System.out.println(ANSI_RED + "*Inserisci un numero valido*" + ANSI_RESET);
-	        	scanner.nextLine(); //advance buffer
-			}
+			Offer offer = getItemByIndex(offers);
+			System.out.println(offer != null ? offer : offerNotFoundMsg);
 		});
 
 		choiceMenu.showCmds();
 	}
-
-
 }
