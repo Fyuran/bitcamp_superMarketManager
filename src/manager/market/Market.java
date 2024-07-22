@@ -54,6 +54,8 @@ public class Market {
 	}
 
 	//errorMsgs
+	private static final String emptyInputMsg = ANSI_RED + "*Non hai inserito nulla*" + ANSI_RESET;
+	
 	private static final String noItemsInListMsg = ANSI_RED + "*Lista vuota*" + ANSI_RESET;
 	private static final String invalidCategoryMsg = ANSI_RED + "*Inserisci una categoria valida*" + ANSI_RESET;
 	
@@ -304,7 +306,11 @@ public class Market {
 	public Product addProduct(boolean isEdit) {
 		System.out.println("\nInserisci il nome del prodotto: ");
 		String name = scanner.nextLine();
-
+		
+		if(name.isBlank()) {
+			System.out.println(emptyInputMsg);
+			return null;
+		}
 		if(!isEdit) { //do not return if we need to edit item
 			//check if product already exists
 			int indexOfProduct = getItemIndexByName(name, products);
@@ -506,6 +512,9 @@ public class Market {
 	*/
 	public Offer addOffer(boolean isEdit) {
 		Product product = addProduct(isEdit);
+		if(product == null) {
+			return null;
+		}
 		if(products.contains(product)) { //remove from products arrayList to deny clones
 			products.remove(product);
 		}
