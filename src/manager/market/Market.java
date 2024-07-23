@@ -129,7 +129,7 @@ public class Market {
 		}
 
 		for(int i = 0; i < list.size(); i++) {
-			System.out.println(i + ". " + list.get(i));
+			System.out.println((i + 1) + ". " + list.get(i));
 		}
 	}
 	
@@ -263,7 +263,7 @@ public class Market {
 		System.out.println("Inserisci l'indice del " + getItemDisplayName(list));
 		while(true) {
 			if(scanner.hasNextInt()) {
-				int index = scanner.nextInt();
+				int index = scanner.nextInt() - 1;
 				scanner.nextLine();
 				
 				if(itemExists(index, list))
@@ -388,7 +388,7 @@ public class Market {
 			System.out.println("Inserisci l'indice del prodotto dell'offerta da cancellare");
 			int index = -1;
 			if(scanner.hasNextInt()) {
-				index = scanner.nextInt();
+				index = scanner.nextInt() - 1;
 				scanner.nextLine();
 
 				try {
@@ -415,7 +415,7 @@ public class Market {
 		}
 
 		for(int i = 0; i < products.size(); i++) {
-			 System.out.println(i + ". "  + products.get(i));
+			 System.out.println((i+1) + ". "  + products.get(i));
 		}
 	}
 	/**
@@ -443,7 +443,7 @@ public class Market {
 			System.out.println("Inserisci l'indice del prodotto da modificare");
 			int index = -1;
 			if(scanner.hasNextInt()) {
-				index = scanner.nextInt();
+				index = scanner.nextInt() - 1;
 				scanner.nextLine();
 
 				if(index != -1) {
@@ -487,7 +487,7 @@ public class Market {
 			System.out.println("Inserisci l'ID del prodotto da visualizzare");
 			int index = -1;
 			if(scanner.hasNextInt()) {
-				index = scanner.nextInt();
+				index = scanner.nextInt() - 1;
 				scanner.nextLine();
 
 				if(index != -1) {
