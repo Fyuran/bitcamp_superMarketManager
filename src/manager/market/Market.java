@@ -567,7 +567,7 @@ public class Market {
 				}
 
 				isValidInput = true;
-			}catch (Exception e) {
+			}catch (DateTimeParseException e) {
 				System.out.println(ANSI_RED + "*Inserisci una data valida* " + e.getMessage() + ANSI_RESET);
 			}
 		}
